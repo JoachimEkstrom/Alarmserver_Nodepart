@@ -1,4 +1,5 @@
-A basic SQLite3 database for speed testing. 
+A basic SQLite3 database handler for the TwinCAT Eventlogger. Exports data as .xlsx and .pdf. 
+Require libreoffice to be installed.  
 
 Made changes in node_modules libreoffice-convert index.js accordingly to this issue
 https://github.com/elwerene/libreoffice-convert/issues/32
