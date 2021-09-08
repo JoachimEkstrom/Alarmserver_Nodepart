@@ -1,0 +1,43 @@
+CREATE VIEW ExportView2 AS 
+SELECT Entities.Id AS EntityId , Type, EventClass, Entities.EventId, Entities.ObjectId, Severity, 
+AlarmState.IsActive AS IsActive, 
+AlarmState.IsRaised AS IsRaised, 
+AlarmState.ConfirmationState AS ConfirmationState, 
+MIN(CASE WHEN Events.CategoryId IN(1, 2) THEN Events.Time END) AS TimeRaised, 
+MAX(CASE WHEN Events.CategoryId IN(3, 4) AND AlarmState.IsRaised = 0 THEN Events.Time END) AS TimeCleared, 
+MAX(CASE WHEN Events.CategoryId = 5 AND AlarmState.ConfirmationState IN(3, 4) THEN Events.Time END) AS TimeConfrimed, 
+LAST_VALUE(JsonAttributes.Json) AS JsonAttribute, 
+json_extract(SourceInfo, '$.id') AS SourceId, 
+json_extract(SourceInfo, '$.name') AS SourceName, 
+json_extract(SourceInfo, '$.guid') AS SourceGuid, 
+LAST_VALUE(Arguments.Count) AS ArgCount, 
+LAST_VALUE(Arguments.TypesLength) AS ArgTypesLength, 
+LAST_VALUE(Arguments.TypesBuffer) AS ArgTypesBuffer, 
+LAST_VALUE(Arguments.DataLength) AS ArgDataLength, 
+LAST_VALUE(Arguments.DataBuffer) AS ArgDataBuffer FROM Entities LEFT JOIN Events ON Events.EntityId = Entities.Id LEFT JOIN AlarmState ON AlarmState.EntityId = Entities.Id LEFT JOIN JsonAttributes ON JsonAttributes.EventId = Events.Id LEFT JOIN Arguments  ON Arguments.EventId = Events.Id GROUP BY Entities.Id ORDER BY Entities.Id
+
+SELECT Entities.Id AS EntityId,
+	EventId, 
+	EventClass,
+	Severity, 
+    AlarmState.IsActive AS IsActive, 
+    AlarmState.IsRaised AS IsRaised, 
+    AlarmState.ConfirmationState AS ConfirmationState, 
+    MIN(CASE WHEN Events.CategoryId IN(1, 2) THEN Events.Time END) AS TimeRaised, 
+    MAX(CASE WHEN Events.CategoryId IN(3, 4) AND AlarmState.IsRaised = 0 THEN Events.Time END) AS TimeCleared, 
+    MAX(CASE WHEN Events.CategoryId = 5 AND AlarmState.ConfirmationState IN(3, 4) THEN Events.Time END) AS TimeConfrimed,
+    (SELECT Text FROM Translations WHERE Translations.Id = (SELECT TranslationId FROM StringLocalized_Translations WHERE StringLocalized_Translations.StringLocalizedId = (SELECT StringLocalizedId FROM EventTexts WHERE Entities.EventClass = EventTexts.EventClass AND Entities.EventId = EventTexts.EventId))) AS AlarmDisplayText
+FROM Entities LEFT JOIN Events ON Events.EntityId = Entities.Id LEFT JOIN AlarmState ON AlarmState.EntityId = Entities.Id  GROUP BY Entities.Id ORDER BY Entities.Id
+
+`SELECT Entities.Id AS EntityId,
+            	EventId, 
+            	EventClass,
+            	Severity, 
+                AlarmState.IsActive AS IsActive, 
+                AlarmState.IsRaised AS IsRaised, 
+                AlarmState.ConfirmationState AS ConfirmationState, 
+                MIN(CASE WHEN Events.CategoryId IN(1, 2) THEN Events.Time END) AS TimeRaised, 
+                MAX(CASE WHEN Events.CategoryId = 5 AND AlarmState.ConfirmationState IN(3, 4) THEN Events.Time END) AS TimeConfrimed,
+                MAX(CASE WHEN Events.CategoryId IN(3, 4) AND AlarmState.IsRaised = 0 THEN Events.Time END) AS TimeCleared, 
+                (SELECT Text FROM Translations WHERE Translations.Id = (SELECT TranslationId FROM StringLocalized_Translations WHERE StringLocalized_Translations.StringLocalizedId = (SELECT StringLocalizedId FROM EventTexts WHERE Entities.EventClass = EventTexts.EventClass AND Entities.EventId = EventTexts.EventId))) AS AlarmDisplayText
+            FROM Entities LEFT JOIN Events ON Events.EntityId = Entities.Id LEFT JOIN AlarmState ON AlarmState.EntityId = Entities.Id  GROUP BY Entities.Id ORDER BY Entities.Id DESC`; 	
