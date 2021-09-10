@@ -6,16 +6,29 @@ app.use(cors())
 app.use(express.json()) // for parsing application/json
 app.use(express.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
 app.use(express.static('public'))
-import path from 'path'
 
 import * as sql from './SQLite/SQL.js'
 import * as influxdb from './InfluxDb/InfluxDb.js'
 
 // SQLite DataBase
 
+// Get all data from Alarmserver
 app.get('/xlsx', async (req, res) => {
 
     let dbPromise = sql.callDb()
+    dbPromise.then((message)=> {
+        console.log(message)
+        res.sendFile('./public/WindWings_Report.xlsx' , { root: './' })
+    }).catch((error)=>{
+        res.send(error)
+    })
+
+})
+
+// Get data from a selected time frame from alarmserver
+app.post('/xlsxTime', async (req, res) => {
+    console.log(Date.parse(req.body.fromDate))
+    let dbPromise = sql.callDb(Date.parse(req.body.fromDate))
     dbPromise.then((message)=> {
         console.log(message)
         res.sendFile('./public/WindWings_Report.xlsx' , { root: './' })
@@ -44,6 +57,25 @@ app.get('/pdf', async (req, res) => {
     })
 })
 
+app.post('/pdfTime', async (req, res) => {
+    console.log(Date.parse(req.body.fromDate))
+    let dbPromise = sql.callDb(Date.parse(req.body.fromDate))
+    dbPromise.then((message)=> {
+            console.log(message)
+            let pdfPromise = sql.toPDF()
+            pdfPromise.then((message)=>{
+                console.log(message)
+                res.sendFile('./public/WindWings_Report.pdf', { root: './' })
+            }).catch((message)=>{
+                console.log(message)
+                res.send(message)
+            })
+
+    }).catch((message)=> {
+        console.log(message)
+        res.send(message)
+    })
+})
 
 // InfluxDb 
 
