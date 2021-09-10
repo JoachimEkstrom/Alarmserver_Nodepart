@@ -1,17 +1,21 @@
 //const sqlite3 = require('sqlite3').verbose();
-import * as sqlite3 from 'sqlite3';
+import sqlite3 from 'sqlite3';
 //const Excel = require('exceljs')
-import * as Excel from 'exceljs'
+import Excel from 'exceljs'
 //const fs = require("fs")
 import * as fs from 'fs'
 //const libre = require('libreoffice-convert');
 import * as libre from 'libreoffice-convert'
 //const path = require('path');
-import * as path from 'path'
+import path from 'path'
 
 export async function callDb(){
+
     return new Promise ((resolve, reject)=> {
     let db = new sqlite3.Database('C:\\TwinCAT\\3.1\\Boot\\LoggedEvents.db');
+    db.on('error', err => { 
+        console.log(err)
+    })  
     let sql = `SELECT Entities.Id AS EntityId,
             	EventId, 
             	EventClass,
@@ -30,7 +34,6 @@ export async function callDb(){
             if (err) {
                 reject(err.message)
             } else {
-
                 let workbook = new Excel.Workbook() 
                 workbook.xlsx.readFile("./WindWings_Report_Template.xlsx").then(()=>{
                     let worksheet = workbook.getWorksheet(1);
@@ -47,7 +50,6 @@ export async function callDb(){
                         getRowInsert.getCell('H').value = fileTimeToDate(row[i].TimeCleared)
                         getRowInsert.commit();
                     }
-                    
                     workbook.xlsx.writeFile('./public/WindWings_Report.xlsx').then(()=> {
                         resolve("Done!")
                     });                 
@@ -65,9 +67,9 @@ export async function callDb(){
 export async function toPDF() {
     return new Promise ((resolve, reject)=> {
         const extend = '.pdf'
-        const enterPath = path.join(__dirname, './public/WindWings_Report.xlsx');
-        const outputPath = path.join(__dirname, `./public/WindWings_Report${extend}`);
-        
+        const enterPath = path.join('./', './public/WindWings_Report.xlsx');
+        const outputPath = path.join('./', `./public/WindWings_Report${extend}`);
+
         // Read file
         const file = fs.readFileSync(enterPath);
         // Convert it to pdf format with undefined filter (see Libreoffice doc about filter)
