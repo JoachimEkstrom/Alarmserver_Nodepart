@@ -144,17 +144,12 @@ function ConfirmationState (i){
 }
 
 
-//############################################
-
-// Convert from FILETIME to UTC time
-function fileTimeToDate( fileTime ) { 
-    let newDate = new Date ( (fileTime / 10000) - 11644473600000 );
-    newDate = newDate.toUTCString()
-    return newDate
- };	
+ // Convert from FILETIME to UTC time
+function fileTimeToDate( FILETIME ) { 
+    return new Date ( (FILETIME / 10000) - 11644473600000 ).toUTCString()
+ }	
 
  // Convert from UTC time to FILETIME
-function UTCToFileTime( time ) { 
-    let fileTime = ((time * 10000) + 116444736000000000)
-    return fileTime
- };	
+function UTCToFileTime( dt ) { 
+    return ((dt * 10000) + 116444736000000000)
+ }
